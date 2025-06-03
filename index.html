@@ -16,8 +16,8 @@
       cursor: pointer;
     }
 
-    #first-num,
-    #second-num {
+    #first-num, #second-num {
+
       width: 60px;
     }
 
@@ -42,11 +42,20 @@
       row-gap: 5px;
     }
 
-    #error-btns>* {
+    #error-btns> * {
       padding: 8px 2px;
       width: 122px;
     }
   </style>
+
+<script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+<script>
+  window.TrackJS && TrackJS.install({ 
+    token: "b07ea6c1fa5041dc9fbdf676b62630da",
+    application: "lab9"
+  });
+</script>
+
 </head>
 
 <body>
@@ -89,20 +98,100 @@
 
   <script>
     let form = document.querySelector('form');
+    let timerLabel = 'my-timer';
+
+    class CustomInputError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = "CustomInputError";
+      }
+    }
+
+    function validateInput(val) {
+      if (isNaN(val)) {
+        throw new CustomInputError(`Invalid input: "${val}" is not a number.`);
+      }
+    }
+
     form.addEventListener('submit', e => {
       e.preventDefault();
-      let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
-      let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      const output = document.querySelector('output');
+      const firstNum = document.querySelector('#first-num').value;
+      const secondNum = document.querySelector('#second-num').value;
+      const operator = document.querySelector('#operator').value;
+
+      try {
+        validateInput(firstNum);
+        validateInput(secondNum);
+
+        if (operator === '/' && Number(secondNum) === 0) {
+          throw new Error("Division by zero is not allowed.");
+        }
+
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch (err) {
+        console.error(err.name + ': ' + err.message);
+        output.innerHTML = "Error: " + err.message;
+      } finally {
+        console.log("Calculation attempted");
+      }
     });
 
+    // Console buttons
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+    errorBtns[0].addEventListener('click', () => console.log('This is a console.log demo.'));
+    errorBtns[1].addEventListener('click', () => console.error('This is a console.error demo.'));
+    errorBtns[2].addEventListener('click', () => console.count('Count Button Clicked'));
+    errorBtns[3].addEventListener('click', () => console.warn('This is a console.warn demo.'));
+    errorBtns[4].addEventListener('click', () => console.assert(false, 'Console assert failed: condition was false.'));
+    errorBtns[5].addEventListener('click', () => console.clear());
+    errorBtns[6].addEventListener('click', () => {
+      const obj = { name: 'Object', props: { a: 1, b: 2 }};
+      console.dir(obj);
+    });
+    errorBtns[7].addEventListener('click', () => {
+      const elem = document.querySelector('form');
+      console.dirxml(elem);
+    });
+    errorBtns[8].addEventListener('click', () => {
+      console.group('Grouped Logs');
+      console.log('Inside the group');
+    });
+    errorBtns[9].addEventListener('click', () => {
+      console.groupEnd();
+    });
+    errorBtns[10].addEventListener('click', () => {
+      const people = [
+        {name: "Alice", age: 22},
+        {name: "Bob", age: 25}
+      ];
+      console.table(people);
+    });
+    errorBtns[11].addEventListener('click', () => console.time(timerLabel));
+    errorBtns[12].addEventListener('click', () => console.timeEnd(timerLabel));
+    errorBtns[13].addEventListener('click', () => {
+      functionA();
+      function functionA() {
+        functionB();
+      }
+      function functionB() {
+        functionC();
+      }
+      function functionC() {
+        console.trace("Trace demo");
+      }
+    });
+
+    // Global error handler
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      console.log('Global error caught:', msg, 'at', url, 'line', lineNo);
+      return true;
+    };
+
+    errorBtns[14].addEventListener('click', () => {
+      undefinedFunctionCall(); // Will trigger a global error
+    });
   </script>
 </body>
-
 </html>
